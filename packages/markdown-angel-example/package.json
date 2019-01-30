@@ -1,0 +1,27 @@
+{
+  "version": "0.1.0",
+  "name": "markdown-angel-example",
+  "author": "wangyanjun<linder0209@126.com>",
+  "description": "markdown-angel example",
+  "keywords": [
+    "markdown",
+    "angel",
+    "react",
+    "webpack"
+  ],
+  "scripts": {
+    "start": "cross-env NODE_ENV=development markdown start",
+    "build": "markdown build",
+    "deploy": "markdown gh-pages && rm -rf _site"
+  },
+  "dependencies": {
+    "markdown-angel": "^0.1.0"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=8.15.0"
+  },
+  "devDependencies": {
+    "cross-env": "^5.2.0"
+  }
+}
