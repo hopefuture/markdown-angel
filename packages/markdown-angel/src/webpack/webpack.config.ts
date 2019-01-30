@@ -3,6 +3,8 @@ import webpack from 'webpack';
 import UglifyJsPlugin from 'uglifyjs-webpack-plugin';
 import OptimizeCSSAssetsPlugin from 'optimize-css-assets-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import FriendlyErrorsWebpackPlugin from 'friendly-errors-webpack-plugin';
+import WebpackBar from 'webpackbar';
 import getBabelConfig from './babel-config';
 import getTsConfig from './ts-config';
 import getStyleLoaderConfig from './style-loaders-config';
@@ -13,7 +15,6 @@ export default function webpackConfig(config: any, isBuild: boolean = false) {
   const { stylesOptions, postcssConfig, lessConfig } = config;
   const NODE_ENV = process.env.NODE_ENV || 'production';
   const isDev = process.env.NODE_ENV === 'development';
-  const isProd = NODE_ENV === 'production';
 
   const babelConfig = getBabelConfig(isDev);
   const tsConfig = getTsConfig();
@@ -72,9 +73,17 @@ export default function webpackConfig(config: any, isBuild: boolean = false) {
       ...(isBuild ? { path: path.join(process.cwd(), config.output) } : {}),
       publicPath: isBuild ? config.root : '/',
       filename: '[name].js', // 打包文件名称
-      chunkFilename: `[name]${isProd ? '.[contenthash:6]' : ''}.js`,
+      chunkFilename: '[name].js',
       pathinfo: isDev, // 打印路径信息
-      sourceMapFilename: 'map/[file].map',
+      ...(isBuild
+        ? {
+            sourceMapFilename: path.join(
+              process.cwd(),
+              config.output,
+              'map/[file].map'
+            ),
+          }
+        : {}),
     },
 
     // module 处理
@@ -226,7 +235,7 @@ export default function webpackConfig(config: any, isBuild: boolean = false) {
                 test: /[\\/]node_modules[\\/]/, // 合并指定的模块，这里只 node_modules 下所有公共的，也可以设为 /react|babel/ 等
                 name: 'vendors', // 要缓存的分隔出来的 chunk 名称
               },
-              // 所有的 css 生成一个文件，这样只需第一次加载 css 文件，后续不需要按需加载，这样体验可能会更好些，如果需要按需加载的话，可以把这个去掉，同时 server 端引入 css 和 js 也需要调整，怎样调整可以查看历史版本
+              // 所有的 css 生成一个文件，这样只需第一次加载 css 文件，后续不需要按需加载，这样体验可能会更好些，如果需要按需加载的话，可以把这个去掉
               styles: {
                 name: 'styles',
                 test: /\.(le|s?c)ss$/,
@@ -238,32 +247,42 @@ export default function webpackConfig(config: any, isBuild: boolean = false) {
         },
 
     // https://webpack.js.org/concepts/mode/#mode-development
-    plugins: isDev
-      ? [
-          new webpack.HotModuleReplacementPlugin(), // 热部署替换模块
-        ]
-      : [
-          // 用来优化生成的代码 chunk，合并相同的代码
-          new webpack.optimize.AggressiveMergingPlugin(),
-          new MiniCssExtractPlugin({
-            /*
-             * Options similar to the same options in webpackOptions.output
-             * both options are optional
-             * css/[name].[contenthash:8].css
-             */
-            filename: 'css/[name].[contenthash:8].css',
-          }),
-          new webpack.HashedModuleIdsPlugin(),
-          new webpack.BannerPlugin({
-            banner: [
-              '/*!',
-              ' Markdown Angel',
-              ` Copyright © 2019-${new Date().getFullYear()}.`,
-              '*/',
-            ].join('\n'),
-            raw: true,
-            entryOnly: true,
-          }),
-        ],
+    plugins: [
+      // 显示进度
+      new WebpackBar({
+        name: '🚗 Markdown Angel',
+        color: '#00bcd4',
+        profile: true,
+      }),
+      // 显示错误提示
+      new FriendlyErrorsWebpackPlugin(),
+      ...(isDev
+        ? [
+            new webpack.HotModuleReplacementPlugin(), // 热部署替换模块
+          ]
+        : [
+            // 用来优化生成的代码 chunk，合并相同的代码
+            new webpack.optimize.AggressiveMergingPlugin(),
+            new MiniCssExtractPlugin({
+              /*
+               * Options similar to the same options in webpackOptions.output
+               * both options are optional
+               * css/[name].[contenthash:8].css
+               */
+              filename: 'css/[name].css',
+            }),
+            new webpack.HashedModuleIdsPlugin(),
+            new webpack.BannerPlugin({
+              banner: [
+                '/*!',
+                ' Markdown Angel',
+                ` Copyright © 2019-${new Date().getFullYear()}.`,
+                '*/',
+              ].join('\n'),
+              raw: true,
+              entryOnly: true,
+            }),
+          ]),
+    ],
   };
 }

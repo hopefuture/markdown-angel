@@ -40,10 +40,10 @@ export const start = (program: any) => {
 
   const webpackConfig = getWebpackConfig(config);
 
-  console.info(
-    'webpackConfig----------------',
-    JSON.stringify(webpackConfig, null, 2)
-  );
+  // console.info(
+  //   'webpackConfig----------------',
+  //   JSON.stringify(webpackConfig, null, 2)
+  // );
 
   const serverOptions = {
     quiet: true,
@@ -52,6 +52,7 @@ export const start = (program: any) => {
     contentBase: path.join(process.cwd(), config.output),
     historyApiFallback: true,
     host: 'localhost',
+    overlay: true, // 浏览器上会把错误显示出来了
   };
 
   // @ts-ignore
@@ -95,10 +96,10 @@ export const build = (program: any) => {
 
   const webpackConfig = getWebpackConfig(config, true);
 
-  console.info(
-    'webpackConfig----------------',
-    JSON.stringify(webpackConfig, null, 2)
-  );
+  // console.info(
+  //   'webpackConfig----------------',
+  //   JSON.stringify(webpackConfig, null, 2)
+  // );
 
   // @ts-ignore
   webpack(webpackConfig, (err, stats) => {

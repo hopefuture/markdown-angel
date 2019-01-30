@@ -1,4 +1,7 @@
 .DS_Store
 .idea
 node_modules
+_site
 lib
+packages/*/lib
+tmp
